@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
@@ -21,7 +22,7 @@ import io.github.UltimateBrowserProject.Unit.ViewUnit;
 public class SwitcherPanel extends ViewGroup {
     private View switcherView;
     private View mainView;
-    private RelativeLayout omnibox;
+    private AppBarLayout omnibox;
 
     private float dimen108dp = 0f;
     private float dimen48dp = 0f;
@@ -233,7 +234,7 @@ public class SwitcherPanel extends ViewGroup {
 
         switcherView = getChildAt(0);
         mainView = getChildAt(1);
-        omnibox = (RelativeLayout) mainView.findViewById(R.id.main_omnibox);
+        omnibox = (AppBarLayout) mainView.findViewById(R.id.main_omnibox);
 
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);

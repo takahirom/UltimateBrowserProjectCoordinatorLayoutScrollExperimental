@@ -14,6 +14,12 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.view.MotionEventCompat;
+import android.support.v4.view.NestedScrollingChild;
+import android.support.v4.view.NestedScrollingChildHelper;
+import android.support.v4.view.ViewCompat;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -44,7 +50,7 @@ import io.github.UltimateBrowserProject.Unit.BrowserUnit;
 import io.github.UltimateBrowserProject.Unit.IntentUnit;
 import io.github.UltimateBrowserProject.Unit.ViewUnit;
 
-public class UltimateBrowserProjectWebView extends WebView implements AlbumController {
+public class UltimateBrowserProjectWebView extends WebView implements AlbumController ,NestedScrollingChild{
     private static final float[] NEGATIVE_COLOR = {
             -1.0f, 0, 0, 0, 255, // Red
             0, -1.0f, 0, 0, 255, // Green
@@ -129,24 +135,12 @@ public class UltimateBrowserProjectWebView extends WebView implements AlbumContr
     private synchronized void initWebView() {
         thisWebView = this;
 
-        RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        mChildHelper = new NestedScrollingChildHelper(this);
+        setNestedScrollingEnabled(true);
+        CoordinatorLayout.LayoutParams p = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
 
-        int oh = ViewUnit.goh(context);
-        if(BrowserActivity.anchor == 0) {
-            p.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            p.addRule(RelativeLayout.BELOW, R.id.main_omnibox);
-            p.setMargins(0, 0, 0, 0);
-        } else {
-            p.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-            p.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            p.setMargins(0, 0, 0, -oh);
-        }
-
-        p.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        p.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-
-
+        p.setBehavior(new AppBarLayout.ScrollingViewBehavior());
         this.setLayoutParams(p);
 
         this.setMinimumHeight(ViewUnit.getWindowHeight(context));
@@ -174,84 +168,6 @@ public class UltimateBrowserProjectWebView extends WebView implements AlbumContr
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
             addJavascriptInterface(jsInterface, "JsIface");
-
-        setOnTouchListener(new OnTouchListener() {
-            int oh = ViewUnit.goh(context),
-                    ym1 = 0, ym2 = 0, lastM = 0, cpo = 0, cpwo = oh, lagf = 0;
-
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (view != null && !view.hasFocus())
-                    view.requestFocus();
-
-                BrowserActivity.omnibox.setVisibility(View.VISIBLE);
-
-                int action = motionEvent.getAction();
-                y1 = motionEvent.getY();
-
-                if (action == MotionEvent.ACTION_DOWN) {
-                    Logging.logd("MotionEvent.ACTION_DOWN");
-                    ym1 = (int) y1;
-                } else if (action == MotionEvent.ACTION_UP) {
-                    Logging.logd("MotionEvent.ACTION_UP");
-                    assert view != null;
-                    boolean moveUp = (BrowserActivity.anchor == 0 ? (-cpo >= oh / 2) : (cpo == 0));
-                    ym1 = 0;
-                    ym2 = 0;
-                    lastM = 0;
-                    lagf = 0;
-                    if ((cpo <= 0 && cpo != -oh) ||
-                            (cpo == 0 && cpwo == oh)) {
-                        cpo = 0;
-                        cpwo = oh;
-                    } else {
-                        cpo = -oh;
-                        cpwo = 0;
-                    }
-
-                    BrowserActivity.omnibox.animate()
-                            .translationY((moveUp ? (BrowserActivity.anchor == 0 ? -oh : 0) :
-                                    (BrowserActivity.anchor == 0 ? 0 : oh)))
-                            .setDuration(480);
-                    view.animate()
-                            .translationY((moveUp ? (BrowserActivity.anchor == 0 ? 0 : 0) :
-                                    (BrowserActivity.anchor == 0 ? oh : 0)))
-                            .setDuration(60);
-
-                } else if (action == MotionEvent.ACTION_MOVE) {
-                    assert view != null;
-                    boolean glitchfix = (lastM == 0);
-                    lastM = (int) motionEvent.getY();
-                    ym2 = oh - (lastM - ym1);
-
-                    if (BrowserActivity.anchor == 0) {
-                        cpo -= ym2 - oh;
-                        cpwo = cpo + oh;
-                    } else {
-                        cpo += oh - ym2;
-                        cpwo = oh - cpo;
-                    }
-
-                    if (cpwo < 0) cpwo = 0;
-                    else if (cpwo > oh) cpwo = oh;
-                    if (cpo > 0) cpo = 0;
-                    else if (cpo < -oh) cpo = -oh;
-                    if (!glitchfix) {
-                        if (BrowserActivity.anchor == 0) {
-                            BrowserActivity.omnibox.animate()
-                                    .translationY(cpo)
-                                    .setDuration(0);
-                            view.animate()
-                                    .translationY(cpo + oh)
-                                    .setDuration(0);
-                        }
-                    }
-                }
-
-                gestureDetector.onTouchEvent(motionEvent);
-                return false;
-            }
-        });
     }
 
     private synchronized void initWebSettings() {
@@ -564,6 +480,111 @@ public class UltimateBrowserProjectWebView extends WebView implements AlbumContr
     public static int convertDpToPixels(int dp) {
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         return (int) (dp * metrics.density + 0.5f);
+    }
+
+
+
+
+    private int mLastY;
+    private final int[] mScrollOffset = new int[2];
+    private final int[] mScrollConsumed = new int[2];
+    private int mNestedOffsetY;
+    private NestedScrollingChildHelper mChildHelper;
+
+
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        boolean returnValue = false;
+
+        MotionEvent event = MotionEvent.obtain(ev);
+        final int action = MotionEventCompat.getActionMasked(event);
+        if (action == MotionEvent.ACTION_DOWN) {
+            mNestedOffsetY = 0;
+        }
+        int eventY = (int) event.getY();
+        event.offsetLocation(0, mNestedOffsetY);
+        switch (action) {
+            case MotionEvent.ACTION_MOVE:
+                int deltaY = mLastY - eventY;
+                // NestedPreScroll
+                if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mScrollOffset)) {
+                    deltaY -= mScrollConsumed[1];
+                    mLastY = eventY - mScrollOffset[1];
+                    event.offsetLocation(0, -mScrollOffset[1]);
+                    mNestedOffsetY += mScrollOffset[1];
+                }
+                returnValue = super.onTouchEvent(event);
+
+                // NestedScroll
+                if (dispatchNestedScroll(0, mScrollOffset[1], 0, deltaY, mScrollOffset)) {
+                    event.offsetLocation(0, mScrollOffset[1]);
+                    mNestedOffsetY += mScrollOffset[1];
+                    mLastY -= mScrollOffset[1];
+                }
+                break;
+            case MotionEvent.ACTION_DOWN:
+                returnValue = super.onTouchEvent(event);
+                mLastY = eventY;
+                // start NestedScroll
+                startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                returnValue = super.onTouchEvent(event);
+                // end NestedScroll
+                stopNestedScroll();
+                break;
+        }
+        return returnValue;
+    }
+
+    // Nested Scroll implements
+    @Override
+    public void setNestedScrollingEnabled(boolean enabled) {
+        mChildHelper.setNestedScrollingEnabled(enabled);
+    }
+
+    @Override
+    public boolean isNestedScrollingEnabled() {
+        return mChildHelper.isNestedScrollingEnabled();
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes) {
+        return mChildHelper.startNestedScroll(axes);
+    }
+
+    @Override
+    public void stopNestedScroll() {
+        mChildHelper.stopNestedScroll();
+    }
+
+    @Override
+    public boolean hasNestedScrollingParent() {
+        return mChildHelper.hasNestedScrollingParent();
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed,
+                                        int[] offsetInWindow) {
+        return mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
+        return mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
+        return mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
+        return mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 
 }

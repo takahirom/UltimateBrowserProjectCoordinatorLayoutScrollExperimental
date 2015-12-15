@@ -2,15 +2,18 @@ package io.github.UltimateBrowserProject.View;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import io.github.UltimateBrowserProject.Browser.AlbumController;
 import io.github.UltimateBrowserProject.Browser.BrowserController;
 import io.github.UltimateBrowserProject.R;
 
-public class UltimateBrowserProjectRelativeLayout extends RelativeLayout implements AlbumController {
+public class UltimateBrowserProjectRelativeLayout extends AppBarLayout implements AlbumController {
     private Context context;
     private Album album;
     private int flag = 0;
@@ -26,11 +29,7 @@ public class UltimateBrowserProjectRelativeLayout extends RelativeLayout impleme
     }
 
     public UltimateBrowserProjectRelativeLayout(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public UltimateBrowserProjectRelativeLayout(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+        super(context, attrs);
         this.context = context;
         this.album = new Album(context, this, this.controller);
         initUI();

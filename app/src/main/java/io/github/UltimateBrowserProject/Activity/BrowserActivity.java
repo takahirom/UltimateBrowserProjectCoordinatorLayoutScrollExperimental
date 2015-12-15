@@ -30,6 +30,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -133,7 +134,7 @@ public class BrowserActivity extends Activity implements BrowserController {
                         switcherAdd,
                         switcherPrint;
 
-    public static RelativeLayout omnibox = null;
+    public static AppBarLayout omnibox = null;
     private AutoCompleteTextView inputBox;
     private ImageButton omniboxBookmark,
                         omniboxRefresh,
@@ -699,7 +700,7 @@ public class BrowserActivity extends Activity implements BrowserController {
     }
 
     private void initOmnibox() {
-        omnibox         = (RelativeLayout) findViewById(R.id.main_omnibox);
+        omnibox         = (AppBarLayout) findViewById(R.id.main_omnibox);
         inputBox        = (AutoCompleteTextView) findViewById(R.id.main_omnibox_input);
         omniboxBookmark = (ImageButton) findViewById(R.id.main_omnibox_bookmark);
         omniboxRefresh  = (ImageButton) findViewById(R.id.main_omnibox_refresh);
@@ -1357,7 +1358,6 @@ public class BrowserActivity extends Activity implements BrowserController {
 
             logd("Applying omnibox layout options...");
             CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) omnibox.getLayoutParams();
-
             p.height = ViewUnit.getOmniboxHeight(getApplicationContext());
 
             if(anchor == 0)
