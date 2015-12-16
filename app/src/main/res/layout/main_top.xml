@@ -102,9 +102,9 @@
             android:layout_height="wrap_content">
         <RelativeLayout
             app:layout_scrollFlags="scroll|enterAlways"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/layout_height_48dp"
-                        android:minHeight="@dimen/layout_height_48dp">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                        >
 
             <RelativeLayout android:id="@+id/main_omnibox_tinyseperator"
                             android:layout_width="match_parent"
