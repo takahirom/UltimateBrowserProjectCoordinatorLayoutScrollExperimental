@@ -140,7 +140,11 @@ public class UltimateBrowserProjectWebView extends WebView implements AlbumContr
         CoordinatorLayout.LayoutParams p = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
 
-        p.setBehavior(new AppBarLayout.ScrollingViewBehavior());
+        if (BrowserActivity.anchor==0) {
+            p.setBehavior(new AppBarLayout.ScrollingViewBehavior());
+        }else {
+            p.setBehavior(new ScrollingViewBottomBehavior());
+        }
         this.setLayoutParams(p);
 
         this.setMinimumHeight(ViewUnit.getWindowHeight(context));

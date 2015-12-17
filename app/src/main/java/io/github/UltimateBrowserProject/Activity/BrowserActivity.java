@@ -106,12 +106,14 @@ import io.github.UltimateBrowserProject.Task.ScreenshotTask;
 import io.github.UltimateBrowserProject.Unit.BrowserUnit;
 import io.github.UltimateBrowserProject.Unit.IntentUnit;
 import io.github.UltimateBrowserProject.Unit.ViewUnit;
+import io.github.UltimateBrowserProject.View.BottomAppBarBehavior;
 import io.github.UltimateBrowserProject.View.CompleteAdapter;
 import io.github.UltimateBrowserProject.View.DialogAdapter;
 import io.github.UltimateBrowserProject.View.FullscreenHolder;
 import io.github.UltimateBrowserProject.View.GridAdapter;
 import io.github.UltimateBrowserProject.View.GridItem;
 import io.github.UltimateBrowserProject.View.RecordAdapter;
+import io.github.UltimateBrowserProject.View.ScrollingViewBottomBehavior;
 import io.github.UltimateBrowserProject.View.SwipeToBoundListener;
 import io.github.UltimateBrowserProject.View.SwitcherPanel;
 import io.github.UltimateBrowserProject.View.UltimateBrowserProjectRelativeLayout;
@@ -1362,8 +1364,10 @@ public class BrowserActivity extends Activity implements BrowserController {
 
             if(anchor == 0)
                 p.setMargins(0, 0, 0, ViewUnit.getAdjustedWindowHeight(getApplicationContext()) - p.height);
-            else
+            else {
                 p.setMargins(0, ViewUnit.getAdjustedWindowHeight(getApplicationContext()) - p.height, 0, 0);
+                p.setBehavior(new BottomAppBarBehavior());
+            }
 
             logd("Setting layout params...");
             omnibox.setLayoutParams(p);
